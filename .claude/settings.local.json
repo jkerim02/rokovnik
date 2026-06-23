@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx --yes create-expo-app@latest .tmp-expo --template default --no-install)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"--- exit: $? ---\")"
+    ]
+  }
+}
