@@ -21,10 +21,19 @@ expo-env.d.ts
 # ---- Native build artifacts ----
 android/
 ios/
+.kotlin/
 *.orig.*
 *.apk
 *.aab
 *.ipa
+
+# ---- Native signing credentials (never commit) ----
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
 
 # ---- Metro ----
 .metro-health-check*
