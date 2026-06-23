@@ -8,12 +8,15 @@ import { useCallback } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Card, Screen, Text } from '@/components/ui';
-import { booksRepo, notesRepo } from '@/db/repositories';
+import { booksRepo, notesRepo, sessionsRepo } from '@/db/repositories';
 import { BookCover } from '@/features/books/BookCover';
 import { statusLabel } from '@/features/books/bookStatus';
 import { useBook } from '@/features/books/useBooks';
 import { NoteItem } from '@/features/notes/NoteItem';
 import { useNotes } from '@/features/notes/useNotes';
+import { stopActiveTimer } from '@/features/reading/stopTimer';
+import { useBookSessions } from '@/features/reading/useSessions';
+import { useTimerStore } from '@/state/timerStore';
 import { useTheme } from '@/theme';
 import { deleteCover } from '@/utils/imageResize';
 
@@ -22,12 +25,41 @@ export default function BookDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { book, loading, refresh } = useBook(id);
   const { notes, refresh: refreshNotes } = useNotes(id);
+  const { sessions, refresh: refreshSessions } = useBookSessions(id);
+  const activeTimer = useTimerStore((s) => s.active);
+  const startTimer = useTimerStore((s) => s.start);
+  const isTimingThisBook = activeTimer?.bookId === id;
 
   useFocusEffect(
     useCallback(() => {
       void refresh();
       void refreshNotes();
-    }, [refresh, refreshNotes]),
+      void refreshSessions();
+    }, [refresh, refreshNotes, refreshSessions]),
+  );
+
+  async function handleStopTimer() {
+    await stopActiveTimer();
+    await refreshSessions();
+  }
+
+  function confirmDeleteSession(sessionId: string) {
+    Alert.alert('Obriši sesiju?', undefined, [
+      { text: 'Odustani', style: 'cancel' },
+      {
+        text: 'Obriši',
+        style: 'destructive',
+        onPress: async () => {
+          await sessionsRepo.deleteSession(sessionId);
+          await refreshSessions();
+        },
+      },
+    ]);
+  }
+
+  const totalMinutes = sessions.reduce(
+    (sum, s) => sum + (s.durationMinutes ?? 0),
+    0,
   );
 
   function confirmDeleteNote(noteId: string) {
@@ -127,6 +159,59 @@ export default function BookDetailScreen() {
       </Card>
 
       <View style={styles.sectionHead}>
+        <Text variant="heading">Čitanje</Text>
+        <Pressable
+          onPress={() => router.push(`/book/${book.id}/session`)}
+          hitSlop={10}>
+          <Text variant="label" color={theme.accent}>
+            + Ručni unos
+          </Text>
+        </Pressable>
+      </View>
+
+      {isTimingThisBook ? (
+        <Button title="■ Zaustavi čitanje" variant="danger" onPress={handleStopTimer} />
+      ) : (
+        <Button
+          title="▶ Počni čitanje"
+          onPress={() => startTimer(book.id, book.title)}
+          disabled={!!activeTimer && !isTimingThisBook}
+        />
+      )}
+      {activeTimer && !isTimingThisBook ? (
+        <Text variant="muted" style={{ marginTop: 6 }}>
+          Tajmer je već aktivan za drugu knjigu.
+        </Text>
+      ) : null}
+
+      {sessions.length > 0 ? (
+        <View style={{ marginTop: 12, gap: 8 }}>
+          <Text variant="muted">
+            Ukupno: {Math.floor(totalMinutes / 60)}h {totalMinutes % 60}min ·{' '}
+            {sessions.length} sesija
+          </Text>
+          {sessions.map((s) => (
+            <Card key={s.id} onPress={() => confirmDeleteSession(s.id)}>
+              <View style={styles.detailRow}>
+                <Text>
+                  {s.startTime ? s.startTime.slice(0, 10) : '—'}{' '}
+                  <Text variant="muted">({s.source === 'timer' ? 'tajmer' : 'ručno'})</Text>
+                </Text>
+                <Text variant="label" color={theme.accent}>
+                  {s.durationMinutes ?? 0} min
+                </Text>
+              </View>
+              {s.pagesRead != null ? (
+                <Text variant="muted" style={{ marginTop: 2 }}>
+                  {s.pagesRead} str.
+                </Text>
+              ) : null}
+            </Card>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.sectionHead}>
         <Text variant="heading">Bilješke</Text>
         <Pressable onPress={() => router.push(`/book/${book.id}/note`)} hitSlop={10}>
           <Text variant="label" color={theme.accent}>
@@ -145,8 +230,6 @@ export default function BookDetailScreen() {
           ))}
         </View>
       )}
-
-      {/* Sesije čitanja se dodaju u narednom koraku. */}
 
       <Button
         title="Obriši knjigu"

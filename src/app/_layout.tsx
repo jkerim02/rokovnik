@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
 import { useDbMigrations } from '@/db/migrate';
 import { settingsRepo } from '@/db/repositories';
+import { TimerIndicator } from '@/features/reading/TimerIndicator';
 import { ThemeProvider, type ThemeOverride } from '@/theme';
 
 export default function RootLayout() {
@@ -58,6 +59,7 @@ export default function RootLayout() {
             <Stack.Screen name="book/[id]/index" options={{ headerShown: true }} />
             <Stack.Screen name="book/[id]/edit" options={{ headerShown: true }} />
             <Stack.Screen name="book/[id]/note" options={{ headerShown: true }} />
+            <Stack.Screen name="book/[id]/session" options={{ headerShown: true }} />
             <Stack.Screen name="dict/new" options={{ headerShown: true }} />
             <Stack.Screen name="deck/[id]" options={{ headerShown: true }} />
             <Stack.Screen name="quiz/vocab" options={{ headerShown: true }} />
@@ -67,6 +69,7 @@ export default function RootLayout() {
               options={{ headerShown: true, title: 'Podešavanja', presentation: 'modal' }}
             />
           </Stack>
+          <TimerIndicator />
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
