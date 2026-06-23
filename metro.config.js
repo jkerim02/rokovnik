@@ -1,11 +1,6 @@
-// Metro konfiguracija (Expo).
-// Dodaje `.sql` u sourceExts kako bi Drizzle migracije (drizzle-orm/expo-sqlite)
-// mogle importovati generisane .sql fajlove kao string.
-// https://orm.drizzle.team/docs/connect-expo-sqlite
+// Metro konfiguracija (Expo) — default.
+// Migracije se ne importuju kao .sql (vidi scripts/bundle-migrations.mjs koji
+// inline-uje SQL u migrations.generated.ts), pa dodatni sourceExts nisu potrebni.
 const { getDefaultConfig } = require('expo/metro-config');
 
-const config = getDefaultConfig(__dirname);
-
-config.resolver.sourceExts.push('sql');
-
-module.exports = config;
+module.exports = getDefaultConfig(__dirname);
