@@ -8,10 +8,12 @@ import { useCallback } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, Card, Screen, Text } from '@/components/ui';
-import { booksRepo } from '@/db/repositories';
+import { booksRepo, notesRepo } from '@/db/repositories';
 import { BookCover } from '@/features/books/BookCover';
 import { statusLabel } from '@/features/books/bookStatus';
 import { useBook } from '@/features/books/useBooks';
+import { NoteItem } from '@/features/notes/NoteItem';
+import { useNotes } from '@/features/notes/useNotes';
 import { useTheme } from '@/theme';
 import { deleteCover } from '@/utils/imageResize';
 
@@ -19,12 +21,28 @@ export default function BookDetailScreen() {
   const { theme } = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { book, loading, refresh } = useBook(id);
+  const { notes, refresh: refreshNotes } = useNotes(id);
 
   useFocusEffect(
     useCallback(() => {
       void refresh();
-    }, [refresh]),
+      void refreshNotes();
+    }, [refresh, refreshNotes]),
   );
+
+  function confirmDeleteNote(noteId: string) {
+    Alert.alert('Obriši bilješku?', undefined, [
+      { text: 'Odustani', style: 'cancel' },
+      {
+        text: 'Obriši',
+        style: 'destructive',
+        onPress: async () => {
+          await notesRepo.deleteNote(noteId);
+          await refreshNotes();
+        },
+      },
+    ]);
+  }
 
   if (loading) {
     return (
@@ -108,7 +126,27 @@ export default function BookDetailScreen() {
         ) : null}
       </Card>
 
-      {/* Bilješke i sesije čitanja se dodaju u narednim koracima. */}
+      <View style={styles.sectionHead}>
+        <Text variant="heading">Bilješke</Text>
+        <Pressable onPress={() => router.push(`/book/${book.id}/note`)} hitSlop={10}>
+          <Text variant="label" color={theme.accent}>
+            + Dodaj
+          </Text>
+        </Pressable>
+      </View>
+      {notes.length === 0 ? (
+        <Text variant="muted" style={{ marginTop: 4 }}>
+          Još nema bilješki za ovu knjigu.
+        </Text>
+      ) : (
+        <View style={{ gap: 10, marginTop: 4 }}>
+          {notes.map((n) => (
+            <NoteItem key={n.id} note={n} onPress={() => confirmDeleteNote(n.id)} />
+          ))}
+        </View>
+      )}
+
+      {/* Sesije čitanja se dodaju u narednom koraku. */}
 
       <Button
         title="Obriši knjigu"
@@ -141,5 +179,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 6,
     gap: 12,
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 6,
   },
 });
