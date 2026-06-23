@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# Usputnik
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Lični, **offline-first** alat za čitanje stranih knjiga: biblioteka, bilješke,
+rječnik, vokabular, kvizovi i praćenje vremena čitanja. Sve glavne funkcije rade
+bez interneta.
 
-## Get started
+> Arhitektura aplikacije je u lokalnom (netracked) dokumentu
+> `usputnik-arhitektura.md`.
 
-1. Install dependencies
+## Faza 1 (v1.0) — gotovo
 
-   ```bash
-   npm install
-   ```
+Potpuno offline MVP, bez naloga/sync-a/Supabase-a:
 
-2. Start the app
+- **Biblioteka** — CRUD knjiga (naslov, autor, status, naslovnica…), detalj knjige
+- **Bilješke** — po stranici, sa kategorijom (Citat / Misao / Pitanje / Razmišljanje)
+- **Rječnik** — pretraga + ručno dodavanje odrednica
+- **Vokabular** — liste (decks) + pojmovi
+- **Učenje** — kviz iz vokabulara (riječ → značenje) i citata (citat → knjiga)
+- **Praćenje čitanja** — wall-clock tajmer (preživljava pozadinu) + ručni unos,
+  plutajući indikator, statistika (ukupno, niz dana, po knjizi)
+- **Teme** — sistem/light/dark, crna-bijela-zelena paleta
 
-   ```bash
-   npx expo start
-   ```
+## Tehnologije
 
-In the output, you'll find options to open the app in a
+Expo (SDK 56) · Expo Router · TypeScript · expo-sqlite + Drizzle ORM · Zustand ·
+date-fns
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Pokretanje
 
 ```bash
-npm run reset-project
+npm install
+npm start          # Expo dev server (skeniraj QR ili pokreni na emulatoru)
+npm run android    # direktno na Android
+npm run ios        # direktno na iOS (macOS)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Baza / migracije
 
-### Other setup steps
+Šema je u `src/db/schema.ts`. Nakon izmjene šeme:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm run db:generate   # generiše SQL migraciju + inline TS bundle
+```
 
-## Learn more
+## Struktura
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/
+  app/            # ekrani (Expo Router) — (tabs), book/, deck/, dict/, quiz/, stats, settings
+  components/ui/  # Screen, Text, Card, Button, Field, EmptyState
+  db/             # schema, client, migrate, repositories/
+  features/       # books, notes, vocab, quiz, reading, stats
+  state/          # timerStore (Zustand + AsyncStorage)
+  theme/          # tokens + ThemeProvider
+  utils/          # imageResize
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Sljedeće faze
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Faza 2** — Supabase sloj (auth, sync engine, Storage za naslovnice)
+- **Faza 3** — pravi rječnici (EN-BS + bosanski + filozofski) kroz import skriptu, FTS
+- **Faza 4** — notifikacije, export, heatmap, multi-device polish
