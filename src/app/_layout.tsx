@@ -54,7 +54,9 @@ export default function RootLayout() {
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="book/[id]" options={{ headerShown: true, title: 'Knjiga' }} />
+            <Stack.Screen name="book/new" options={{ headerShown: true }} />
+            <Stack.Screen name="book/[id]/index" options={{ headerShown: true }} />
+            <Stack.Screen name="book/[id]/edit" options={{ headerShown: true }} />
             <Stack.Screen
               name="settings"
               options={{ headerShown: true, title: 'Podešavanja', presentation: 'modal' }}
