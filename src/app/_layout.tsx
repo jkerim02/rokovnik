@@ -64,6 +64,7 @@ export default function RootLayout() {
             <Stack.Screen name="deck/[id]" options={{ headerShown: true }} />
             <Stack.Screen name="quiz/vocab" options={{ headerShown: true }} />
             <Stack.Screen name="quiz/notes" options={{ headerShown: true }} />
+            <Stack.Screen name="stats" options={{ headerShown: true }} />
             <Stack.Screen
               name="settings"
               options={{ headerShown: true, title: 'Podešavanja', presentation: 'modal' }}

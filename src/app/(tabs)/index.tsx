@@ -24,12 +24,20 @@ export default function BibliotekaScreen() {
         options={{
           title: 'Biblioteka',
           headerRight: () => (
-            <Pressable
-              onPress={() => router.push('/settings')}
-              hitSlop={12}
-              style={{ paddingHorizontal: 12 }}>
-              <Text style={{ fontSize: 18 }}>⚙️</Text>
-            </Pressable>
+            <View style={{ flexDirection: 'row' }}>
+              <Pressable
+                onPress={() => router.push('/stats')}
+                hitSlop={12}
+                style={{ paddingHorizontal: 10 }}>
+                <Text style={{ fontSize: 18 }}>📊</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => router.push('/settings')}
+                hitSlop={12}
+                style={{ paddingHorizontal: 10 }}>
+                <Text style={{ fontSize: 18 }}>⚙️</Text>
+              </Pressable>
+            </View>
           ),
         }}
       />
